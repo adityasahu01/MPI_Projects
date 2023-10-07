@@ -1,17 +1,17 @@
 # Install mpich Ubuntu
 sudo apt install mpich
 
-# Install CMake
+## Install CMake
 sudo apt install cmake
 
-# Install GTest
+## Install GTest
 sudo apt-get install libgtest-dev
 
-# Build
-```
+## Build
+```bash
 cmake .
 make
 ./build/vector_addition <size>
 ```
 
-**Makefile in /temp if you want to build test**
+**Makefile in /temp if you want to build test binaries**
