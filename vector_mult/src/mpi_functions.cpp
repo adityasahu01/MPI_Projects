@@ -56,7 +56,7 @@ std::vector<std::vector<int>> mpi_vector_mult(int argc, char** argv,
     }
 
     // Gather results back to array_c
-    MPI_Gather(array_c, rows * rows / size, MPI_INT, receive_buffer, rows * rows / size, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Gather(array_c[from], rows * rows / size, MPI_INT, receive_buffer, rows * rows / size, MPI_INT, 0, MPI_COMM_WORLD);
 
     // Copy the results back to the result matrix
     if (rank == 0) {

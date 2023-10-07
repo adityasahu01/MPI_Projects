@@ -14,4 +14,4 @@ make
 ./build/vector_addition <size>
 ```
 
-**This code doesn't work for size >= 1000**
+**This code doesn't work for size > 650**
