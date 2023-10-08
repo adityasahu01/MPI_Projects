@@ -11,7 +11,7 @@ sudo apt-get install libgtest-dev
 ```bash
 cmake .
 make
-./build/multiply <size>
+./build/multiply_vector <size>
 ```
 
 ** If this code fails on your machine, then it's likely because of the limited stack size
