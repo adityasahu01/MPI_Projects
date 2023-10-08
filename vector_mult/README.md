@@ -14,7 +14,7 @@ make
 ./build/multiply_vector <size>
 ```
 
-** If this code fails on your machine, then it's likely because of the limited stack size
-** These arrays are being allocated on the stack, and if they become too large, they can 
-** lead to a stack overflow and a segmentation fault. When this happens, try allocating
-** memory on the heap using new or malloc instead.
+If this code fails on your machine, then it's likely because of the limited stack size
+These arrays are being allocated on the stack, and if they become too large, they can 
+lead to a stack overflow and a segmentation fault. When this happens, try allocating
+memory on the heap using new or malloc instead.
