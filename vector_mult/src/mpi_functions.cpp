@@ -1,3 +1,12 @@
+/*
+ *****************************************************
+ *  Author - Aditya Sahu
+ *  https://github.com/adityasahu01/MPI_Projects
+ *  
+ *  Copyright (c), 2023
+ *****************************************************
+ */
+
 #include "mpi_mult_pvt.h"
 
 std::vector<std::vector<int>> mpi_vector_mult(int argc, char** argv,

@@ -1,3 +1,12 @@
+/*
+ *****************************************************
+ *  Author - Aditya Sahu
+ *  https://github.com/adityasahu01/MPI_Projects
+ *  
+ *  Copyright (c), 2023
+ *****************************************************
+ */
+
 #include "mpi_addition_pvt.h"
 
 void 
@@ -54,11 +63,19 @@ main(int argc, char** argv)
 
     if (mpi_res != std_res) {
         std::cout << "Outputs don't match" << "\n";
+        std::cout << "MPI matrix :" << "\n";
+        (void)print_matrix(mpi_res);
+
+        std::cout << "STD matrix :" << "\n";
+        (void)print_matrix(std_res);
     }
 
-    std::cout << "MPI Execution Time: " << duration_mpi.count() << " ms" << std::endl;
-    std::cout << "C++ Execution Time: " << duration_cpp.count() << " ms" << std::endl;
-    std::cout << "Speedup: " << speedup << std::endl;
+    std::cout << "\n\n";
+    std::cout << "+++++++++++ add_vector " << size << " +++++++++++" << "\n";
+    std::cout << "MPI Execution Time: " << duration_mpi.count() << " ms" << "\n";
+    std::cout << "C++ Execution Time: " << duration_cpp.count() << " ms" << "\n";
+    std::cout << "Speedup: " << speedup << "\n";
+    std::cout << "----------- add_vector " << size << " -----------" << "\n\n\n";
 
     return 0;
 }

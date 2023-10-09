@@ -1,3 +1,12 @@
+/*
+ *****************************************************
+ *  Author - Aditya Sahu
+ *  https://github.com/adityasahu01/MPI_Projects
+ *  
+ *  Copyright (c), 2023
+ *****************************************************
+ */
+
 #include "mpi_mult_pvt.h"
 
 // Print Matrix
@@ -5,7 +14,6 @@ void
 print_matrix (std::vector<std::vector<int>> &v)
 {
     int rows = v.size();
-    std::cout << "Result of Vector Addition:\n";
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < rows; j++) {
             std::cout << v[i][j] << "\t";

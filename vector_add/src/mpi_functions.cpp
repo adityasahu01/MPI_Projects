@@ -1,6 +1,14 @@
+/*
+ *****************************************************
+ *  Author - Aditya Sahu
+ *  https://github.com/adityasahu01/MPI_Projects
+ *  
+ *  Copyright (c), 2023
+ *****************************************************
+ */
+
 #include "mpi_addition_pvt.h"
 
-// Your matrix addition functions here
 // void
 std::vector<std::vector<int>>
 mpi_vector_add(int argc, char** argv,

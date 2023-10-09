@@ -1,3 +1,12 @@
+/*
+ *****************************************************
+ *  Author - Aditya Sahu
+ *  https://github.com/adityasahu01/MPI_Projects
+ *  
+ *  Copyright (c), 2023
+ *****************************************************
+ */
+
 #include <iostream>
 #include <stdlib.h>
 #include <chrono>

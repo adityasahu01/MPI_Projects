@@ -1,3 +1,10 @@
+############################################################
+#   Author - Aditya Sahu
+#   https://github.com/adityasahu01/MPI_Projects
+#   
+#   Copyright (c), 2023
+#############################################################
+
 cmake_minimum_required(VERSION 3.12)
 project(VectorAddition)
 
@@ -14,7 +21,7 @@ set(BIN_DIR build)
 file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 
 # Executable name
-set(EXECUTABLE vector_addition)
+set(EXECUTABLE add_vector)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/build)
 # set(CMAKE_LOG_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build_logs")
 
