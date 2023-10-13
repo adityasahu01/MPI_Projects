@@ -14,6 +14,7 @@ import sys
 import multiprocessing
 import logging
 from datetime import datetime
+from prettytable import PrettyTable
 
 exec_dict = {
     "test_multiply_vector" : "multiply_vector",
@@ -28,6 +29,52 @@ src_path = [
 script_dir = os.path.dirname(os.path.abspath(__file__))
 tc_file = "testcases"
 log_file = ""
+
+# Stats for testcases
+run = 0
+failed = 0
+passed = 0
+non_zero = 0
+
+failed_testcase = list()
+
+def print_summary():
+    table = PrettyTable()
+    table.field_names = ["TC Info", "#"]
+    table.add_row(["Total TCs", run])
+    table.add_row(["Passed", passed])
+    table.add_row(["Failed", failed])
+    table.add_row(["Non-Zero returns", non_zero])
+    
+    table_str = str("Testsuite summary:\n" + str(table))
+    
+    print(table_str)
+    logging.info(table_str)
+    
+    print("Failed Test Cases : ", failed_testcase)
+    logging.info(str("Failed Test Cases : " + str(failed_testcase)))
+    return
+    
+
+def run_command(command):
+    try:
+        result = subprocess.run(command, 
+                                stdout=subprocess.PIPE, 
+                                stderr=subprocess.PIPE, 
+                                check=True, text=True)
+        
+    except subprocess.CalledProcessError as e:
+        return_code = e.returncode
+        stderr = e.stderr
+
+        print(f"{command} command failed with exit code: {return_code}")
+        print(f"Standard Error:\n{stderr}")
+        logging.error(f"{command} stderr:\n%s", stderr.encode().decode())
+        logging.error(f"{command} exited with non-zero status code: {e.returncode}")
+        logging.error("Exiting!")
+        sys.exit(-1) 
+    
+    return result
 
 def initialize_logging():
     global log_file
@@ -88,102 +135,86 @@ def setup_ws():
         
         # Run cmake to configure the build
         cmake_command = ["cmake", src_dir]
-        try:
-            result = subprocess.run(cmake_command, 
-                                    stdout=subprocess.PIPE, 
-                                    stderr=subprocess.PIPE, 
-                                    check=True, text=True)
-            return_code = result.returncode
-            stdout = result.stdout
-            stderr = result.stderr
+        rc = run_command(cmake_command)
+        
+        return_code = rc.returncode
+        stdout = rc.stdout
 
-            print(f"CMake command returned with exit code: {return_code}")
-            print(f"Standard Output:\n{stdout}")
-            logging.info("CMake completed successfully, %s", src_dir)
-            logging.info("CMake stdout:\n%s", stdout.encode().decode())
-        except subprocess.CalledProcessError as e:
-            return_code = e.returncode
-            stdout = e.stdout
-            stderr = e.stderr
-
-            print(f"CMake command failed with exit code: {return_code}")
-            print(f"Standard Error:\n{stderr}")
-            logging.error("Make stderr:\n%s", stderr.encode().decode())
-            logging.error("Build process exited with non-zero status code: %s, %s", 
-                          e.returncode, src_dir)
-            logging.error("Exiting!")
-            sys.exit(-1) 
+        print(f"CMake returned with exit code: {return_code}")
+        print(f"Standard Output:\n{stdout}")
+        logging.info(f"CMake completed successfully! {src_dir}")
+        logging.info(f"CMake stdout:\n%s", stdout.encode().decode())
+        
 
         # Run make to build the project
         make_command = ["make"]
+        rc = run_command(make_command)
         
-        try:
-            result = subprocess.run(make_command, 
-                                    stdout=subprocess.PIPE, 
-                                    stderr=subprocess.PIPE, 
-                                    check=True, text=True)
-            return_code = result.returncode
-            stdout = result.stdout
-            stderr = result.stderr
-            
-            print(f"Make command returned with exit code: {return_code}")
-            print(f"Standard Output:\n{stdout}")
-            logging.info("Build completed successfully")
-            logging.info("Make stdout:\n%s", stdout.encode().decode())
-        except subprocess.CalledProcessError as e:
-            return_code = e.returncode
-            stdout = e.stdout
-            stderr = e.stderr
+        return_code = rc.returncode
+        stdout = rc.stdout
 
-            print(f"Make command failed with exit code: {return_code}")
-            print(f"Standard Error:\n{stderr}")
-            logging.error("Build process exited with non-zero status code: %s", return_code)
-            logging.error("Make stderr:\n%s", stderr.encode().decode())
-            sys.exit(-1)
+        print(f"Make returned with exit code: {return_code}")
+        print(f"Standard Output:\n{stdout}")
+        logging.info(f"Make completed successfully! {src_dir}")
+        logging.info(f"Make stdout:\n%s", stdout.encode().decode())
 
     return build_dirs
-
-import subprocess
-import logging
 
 def run_single_test(executable, arg):
     logging.info(f"Running Test '{executable} {arg}'")
     print((f"Running Test '{executable} {arg}'"))
-    test_command = [executable, str(arg)]
+    
+    global failed
+    global non_zero
+    global passed
     
     '''
     TODO -
     -   Look for unwanted outputs "Outputs don't match"
     -   Look for non-zero return codes
     '''
+    test_command = [executable, str(arg)]
+    result = run_command(test_command)
+
+    # Capture and log standard output
+    stdout = result.stdout.strip()
+    if stdout:
+        logging.info(f"Test '{executable} {arg}' \n{stdout}")
+
+    # Capture and log standard error
+    stderr = result.stderr.strip()
+    if stderr:
+        logging.error(f"Test '{executable} {arg}' \n{stderr}")
+
+    # Put assert check here
+    # Step 1
+    if result.returncode != 0:
+        non_zero += 1
+        # print(f"Test '{executable} {arg}' returned Non-Zero rc : {result.returncode}")
+        logging.info(f"Test '{executable} {arg}' returned Non-Zero rc : {result.returncode}")
+        assert False, f"Test '{executable} {arg}' returned Non-Zero rc : {result.returncode}"
+    else:
+        print(f"Test '{executable} {arg}' passed step 1")
+        logging.info(f"Test '{executable} {arg}' passed step 1")
     
-    try:
-        result = subprocess.run(test_command, 
-                                stdout=subprocess.PIPE, 
-                                stderr=subprocess.PIPE, 
-                                check=True, text=True)
-
-        # Capture and log standard output
-        stdout = result.stdout.strip()
-        if stdout:
-            logging.info(f"Test '{executable} {arg}' \n{stdout}")
-
-        # Capture and log standard error
-        stderr = result.stderr.strip()
-        if stderr:
-            logging.error(f"Test '{executable} {arg}' \n{stderr}")
-
+    failed_output = "don't match"
+    if failed_output not in stdout: 
+        passed += 1
+        print(f"Test '{executable} {arg}' passed")
         logging.info(f"Test '{executable} {arg}' passed")
-
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Test '{executable} {arg}' failed with exit code {e.returncode}")
-        logging.error(f"Standard Output:\n{e.stdout.strip()}")
-        logging.error(f"Standard Error:\n{e.stderr.strip()}")
+    else:
+        failed += 1
+        failed_testcase.append(test_command)
+        logging.info(f"Test '{executable} {arg}' failed")
+        assert False, f"Test '{executable} {arg}' failed"
+    
+    return
 
 def run_tests(testcases, build_dirs):
     max_processes = multiprocessing.cpu_count()
     pool = multiprocessing.Pool(processes=max_processes)
     running_processes = list()
+    global run
 
     for (executable, args), path in zip(testcases.items(), build_dirs):
         logging.info(f"Running Test '{executable}'")
@@ -191,6 +222,7 @@ def run_tests(testcases, build_dirs):
         exec_path = os.path.join(path, executable)
         
         for arg in args:
+            run += 1
             # Check if we have reached the maximum number of concurrent processes
             while len(running_processes) >= max_processes:
                 # Wait for a process to finish before adding a new one
@@ -212,6 +244,8 @@ def run_tests(testcases, build_dirs):
     # Close the pool
     pool.close()
     pool.join()
+    
+    print_summary()
 
     logging.info("All tests have been run")
     return
@@ -227,31 +261,18 @@ def clean(build_dirs):
             print(f"Target directory '{ws}' does not exist.")
             logging.error(f"Target directory '{ws}' does not exist.")
         
-        make_command = ["make", "clean_all"]
+        clean_command = ["make", "clean_all"]
+        result = run_command(clean_command)
         
-        try:
-            result = subprocess.run(make_command, 
-                                    stdout=subprocess.PIPE, 
-                                    stderr=subprocess.PIPE, 
-                                    check=True, text=True)
-            return_code = result.returncode
-            stdout = result.stdout
-            stderr = result.stderr
-            
-            print(f"make clean_all command returned with exit code: {return_code}")
-            print(f"Standard Output:\n{stdout}")
-            logging.info("Workspace cleaned successfully")
-            logging.info("Make stdout:\n%s", stdout.encode().decode())
-        except subprocess.CalledProcessError as e:
-            return_code = e.returncode
-            stdout = e.stdout
-            stderr = e.stderr
-
-            print(f"make clean_all failed with exit code: {return_code}")
-            print(f"Standard Error:\n{stderr}")
-            logging.error("Workspace clean failed! Exited with non-zero status code: %s", return_code)
-            logging.error("Make stderr:\n%s", stderr.encode().decode())
-            sys.exit(-1)
+        return_code = result.returncode
+        stdout = result.stdout
+        
+        print(f"make clean_all command returned with exit code: {return_code}")
+        print(f"Standard Output:\n{stdout}")
+        logging.info("Workspace cleaned successfully")
+        logging.info("Make stdout:\n%s", stdout.encode().decode())
+    
+    return
         
 
 def main(args):
