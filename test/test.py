@@ -163,10 +163,8 @@ def setup_ws():
 def run_single_test(executable, arg):
     logging.info(f"Running Test '{executable} {arg}'")
     print((f"Running Test '{executable} {arg}'"))
-    
-    global failed
-    global non_zero
-    global passed
+
+    rc = 0
     
     '''
     TODO -
@@ -189,32 +187,36 @@ def run_single_test(executable, arg):
     # Put assert check here
     # Step 1
     if result.returncode != 0:
-        non_zero += 1
+        rc = 1
         # print(f"Test '{executable} {arg}' returned Non-Zero rc : {result.returncode}")
         logging.info(f"Test '{executable} {arg}' returned Non-Zero rc : {result.returncode}")
-        assert False, f"Test '{executable} {arg}' returned Non-Zero rc : {result.returncode}"
+        print(f"Test '{executable} {arg}' returned Non-Zero rc : {result.returncode}")
+        return rc
     else:
         print(f"Test '{executable} {arg}' passed step 1")
         logging.info(f"Test '{executable} {arg}' passed step 1")
     
     failed_output = "don't match"
-    if failed_output not in stdout: 
-        passed += 1
+    if stdout.find(failed_output) == -1:
+        rc = 0
         print(f"Test '{executable} {arg}' passed")
         logging.info(f"Test '{executable} {arg}' passed")
     else:
-        failed += 1
+        rc = -1
         failed_testcase.append(test_command)
         logging.info(f"Test '{executable} {arg}' failed")
         assert False, f"Test '{executable} {arg}' failed"
     
-    return
+    return rc
 
 def run_tests(testcases, build_dirs):
     max_processes = multiprocessing.cpu_count()
     pool = multiprocessing.Pool(processes=max_processes)
     running_processes = list()
     global run
+    global passed
+    global failed
+    global non_zero
 
     for (executable, args), path in zip(testcases.items(), build_dirs):
         logging.info(f"Running Test '{executable}'")
@@ -234,6 +236,14 @@ def run_tests(testcases, build_dirs):
             # Start a new process for the test
             process = pool.apply_async(run_single_test, (exec_path, arg))
             running_processes.append(process)
+        
+            rc = process.get()
+            if rc == 0:
+                passed += 1
+            elif rc == -1:
+                failed += 1
+            else:
+                non_zero += 1
         
         logging.info(f"Finished Test '{executable}'")
 
